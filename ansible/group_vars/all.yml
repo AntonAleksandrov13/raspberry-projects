@@ -1,0 +1,9 @@
+---
+main_node_static_ip: 10.3.50.1
+cluster_subnet: 10.3.50.0
+cluster_broadcast: 10.3.50.255
+cluster_subnet_netmask: 255.255.255.0
+cluster_subnet_starting_ip: 10.3.50.10
+cluster_subnet_ending_ip: 10.3.50.20
+non_cluster_subnet: 192.168.0.0
+non_cluster_netmask: 255.255.255.0

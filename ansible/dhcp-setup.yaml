@@ -1,0 +1,86 @@
+- name: DHCP setup
+  hosts: magi[0]
+  become: yes
+  tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Check if eth0 is disconnected
+      become: yes
+      ansible.builtin.shell:
+        cmd: "nmcli device status | grep -E '^eth0' | awk '{print $3}'"
+      register: eth0_status
+      failed_when: eth0_status.rc != 0 and 'eth0' not in eth0_status.stdout
+
+    - name: Debug the status of eth0
+      debug:
+        msg: "Interface eth0 is currently {{ eth0_status.stdout }}"
+
+    - name: Configure Wired connection 1 with static IP
+      become: yes
+      when: eth0_status.stdout in ["disconnected", "connecting"]
+      ansible.builtin.command:
+        cmd: nmcli con mod "Wired connection 1" ipv4.addresses {{ main_node_static_ip }} ipv4.method manual
+
+    - name: Bring Wired connection 1 down
+      become: yes
+      when: eth0_status.stdout in ["disconnected", "connecting"]
+      ansible.builtin.command:
+        cmd: nmcli con down "Wired connection 1"
+
+    - name: Bring Wired connection 1 up
+      become: yes
+      when: eth0_status.stdout in ["disconnected", "connecting"]
+      ansible.builtin.command:
+        cmd: nmcli con up "Wired connection 1"
+
+    - name: Extract the MAC address of eth0
+      ansible.builtin.set_fact:
+        eth0_mac: "{{ ansible_facts['eth0']['macaddress'] }}"
+
+    - name: Install DHCP server
+      apt:
+        name: isc-dhcp-server
+
+
+#    - name: Ensure the IP route 10.3.50.0/24 via eth0 exists
+#      ansible.builtin.shell: |
+#        ip route add 10.3.50.0/24 dev eth0 proto static || ip route ad    - name: Create /etc/dhcp/dhcpd.conf
+#      become: yes
+#      ansible.builtin.template:
+#        src: dhcpd.conf
+#        dest: /etc/dhcp/dhcpd.conf
+#        owner: root
+#        group: root
+#        mode: 0644
+#
+#    - name: Configure /etc/default/isc-dhcp-server
+#      become: yes
+#      ansible.builtin.copy:
+#        content: |
+#          DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
+#          DHCPDv4_PID=/var/run/dhcpd.pid
+#          INTERFACESv4="eth0"
+#        dest: /etc/default/isc-dhcp-server
+#        owner: root
+#        group: root
+#        mode: '0644'
+#
+#    - name: Configure /etc/hosts
+#      become: yes
+#      ansible.builtin.copy:
+#        content: |
+#          127.0.0.1	localhost
+#          ::1		localhost ip6-localhost ip6-loopback
+#          ff02::1		ip6-allnodes
+#          ff02::2		ip6-allrouters
+#
+#          127.0.1.1	caspar
+#          127.0.1.1	cluster
+#
+#          10.3.50.1	cluster
+#        dest: /etc/hosts
+#        owner: root
+#        group: root
+#        mode: '0644'd 10.3.50.0/24 dev eth0 proto static
+#      become: yes

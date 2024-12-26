@@ -1,0 +1,2 @@
+- import_playbook: initial-setup-playbook.yaml
+- import_playbook: main-node-setup-playbook.yaml

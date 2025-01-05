@@ -2,7 +2,7 @@
   hosts: magi[0]
   become: yes
   tasks:
-    - include_tasks: tasks/update_upgrade.yml
+    - include_tasks: tasks/update_upgrade.yaml
 
     - name: Gather facts
       ansible.builtin.setup:
@@ -80,5 +80,5 @@
         dest: /etc/hosts
         owner: root
         group: root
-        mode: '0644'd 10.3.50.0/24 dev eth0 proto static
+        mode: '0644'
       become: yes

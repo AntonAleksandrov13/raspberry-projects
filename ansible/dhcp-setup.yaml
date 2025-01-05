@@ -2,6 +2,8 @@
   hosts: magi[0]
   become: yes
   tasks:
+    - include_tasks: tasks/update_upgrade.yml
+
     - name: Gather facts
       ansible.builtin.setup:
 

@@ -1,0 +1,7 @@
+- name: Update the package list
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+    upgrade: dist

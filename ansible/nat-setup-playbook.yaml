@@ -49,7 +49,6 @@
         mode: '0755'
 
     - name: Create the IP route check script
-      become: true
       ansible.builtin.copy:
         dest: /usr/local/bin/check_ip_route.sh
         content: |
@@ -71,7 +70,6 @@
         group: root
 
     - name: Create the systemd service file
-      become: true
       ansible.builtin.copy:
         dest: /etc/systemd/system/check-ip-route.service
         content: |
@@ -93,12 +91,17 @@
         group: root
 
     - name: Reload systemd manager configuration
-      become: true
       command: systemctl daemon-reload
 
     - name: Enable the IP route service
-      become: true
       systemd:
         name: check-ip-route.service
         enabled: true
         state: started
+
+    - name: Set up cron job to restart check-ip-route.service every 5 min
+      ansible.builtin.cron:
+        name: "Restart check-ip-route service every 5 min"
+        user: root
+        job: "systemctl restart check-ip-route.service"
+        minute: "*/5"

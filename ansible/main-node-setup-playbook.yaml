@@ -1,3 +1,2 @@
 - import_playbook: dhcp-setup.yaml
 - import_playbook: nat-setup-playbook.yaml
-#- import_playbook: external-disk-setup-playbook.yaml

@@ -1,2 +1,0 @@
-- import_playbook: main-node-setup-playbook.yaml
-- import_playbook: kubernetes-setup-playbook.yaml

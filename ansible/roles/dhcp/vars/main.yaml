@@ -1,4 +1,3 @@
----
 main_node_static_ip: 10.3.50.1
 cluster_subnet: 10.3.50.0
 cluster_broadcast: 10.3.50.255

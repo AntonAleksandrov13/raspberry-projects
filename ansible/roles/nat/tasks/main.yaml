@@ -1,0 +1,116 @@
+---
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Configure IP forward
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.ip_forward=1'
+    state: present
+
+- name: Install iptables
+  become: yes
+  apt:
+    name: iptables
+
+- name: Ensure POSTROUTING MASQUERADE rule exists in iptables
+  become: yes
+  ansible.builtin.shell: |
+    iptables -t nat -C POSTROUTING -o wlan0 -j MASQUERADE || iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+
+- name: Ensure FORWARD RELATED,ESTABLISHED rule exists in iptables
+  become: yes
+  ansible.builtin.shell: |
+    iptables -C FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT || iptables -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+- name: Ensure FORWARD ACCEPT rule from eth0 to wlan0 exists in iptables
+  become: yes
+  ansible.builtin.shell: |
+    iptables -C FORWARD -i eth0 -o wlan0 -j ACCEPT || iptables -A FORWARD -i eth0 -o wlan0 -j ACCEPT
+
+- name: Persist iptables rules
+  become: yes
+  ansible.builtin.shell:
+    cmd: iptables-save > /etc/iptables.ipv4.nat
+
+- name: Write script to /etc/rc.local
+  become: yes
+  ansible.builtin.copy:
+    dest: /etc/rc.local
+    content: |
+      #!/bin/bash
+      _IP=$(hostname -I) || true
+      if [ "$_IP" ]; then
+        printf "My IP address is %s\n" "$_IP"
+      fi
+
+      iptables-restore < /etc/iptables.ipv4.nat
+      
+      exit 0
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create the IP route check script
+  become: yes
+  ansible.builtin.copy:
+    dest: /usr/local/bin/check_ip_route.sh
+    content: |
+      #!/bin/bash
+
+      # Define the route to check
+      TARGET_ROUTE="10.3.50.0/24 dev eth0 proto static"
+
+      # Check if the route already exists
+      if ! ip route show | grep -q "$TARGET_ROUTE"; then
+          # Route does not exist, add it
+          ip route add 10.3.50.0/24 dev eth0 proto static
+          echo "Route added: $TARGET_ROUTE"
+      else
+          echo "Route already exists: $TARGET_ROUTE"
+      fi
+    mode: '0755'  # Set correct permissions for the script
+    owner: root
+    group: root
+
+- name: Create the systemd service file
+  become: yes
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/check-ip-route.service
+    content: |
+      [Unit]
+      Description=Check and Add IP Route
+      After=network.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/check_ip_route.sh
+      RemainAfterExit=true
+      User=root
+      Group=root
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Reload systemd manager configuration
+  become: yes
+  command: systemctl daemon-reload
+
+- name: Enable the IP route service
+  become: yes
+  systemd:
+    name: check-ip-route.service
+    enabled: true
+    state: started
+
+- name: Set up cron job to restart check-ip-route.service every 5 min
+  become: yes
+  ansible.builtin.cron:
+    name: "Restart check-ip-route service every 5 min"
+    user: root
+    job: "systemctl restart check-ip-route.service"
+    minute: "*/5"

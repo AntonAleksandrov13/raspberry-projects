@@ -1,5 +1,0 @@
-- hosts: head-node
-  roles:
-    - dhcp
-    - nat
-    - common-kubernetes

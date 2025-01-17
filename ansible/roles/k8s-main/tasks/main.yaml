@@ -1,0 +1,33 @@
+- name: Check if Kubernetes is already initialized
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_config
+
+- name: Initialize Kubernetes cluster with kubeadm
+  become: true
+  ansible.builtin.shell: |
+    kubeadm init --control-plane-endpoint=magi
+  when: not kubeadm_config.stat.exists
+  register: kubeadm_init_output   # Register the output of the command
+
+- name: Display kubeadm init output
+  ansible.builtin.debug:
+    msg: "{{ kubeadm_init_output.stdout }}"
+  when: not kubeadm_config.stat.exists
+
+- name: Create .kube directory in the user's home
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+    mode: '0755'
+
+- name: Copy Kubernetes admin.conf to user's .kube directory
+  become: yes
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/home/anton/.kube/config"
+    owner: "1000"
+    group: "1000"
+    mode: '0644'
+    remote_src: yes
+    force: true

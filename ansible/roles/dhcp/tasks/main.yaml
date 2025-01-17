@@ -1,5 +1,6 @@
 
-- include_tasks: tasks/update_upgrade.yaml
+- include_tasks: tasks/update.yaml
+- include_tasks: tasks/upgrade.yaml
 
 - name: Check if eth0 is disconnected
   ansible.builtin.shell:

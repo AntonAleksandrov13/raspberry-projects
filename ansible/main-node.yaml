@@ -1,0 +1,6 @@
+- hosts: main-node
+  roles:
+    - {role: 'dhcp', tags: 'dhcp'}
+    - {role: 'nat', tags: 'nat'}
+    - { role: 'common-kubernetes', tags: 'kubernetes' }
+    - { role: 'k8s-main', tags: 'kubernetes, main-node' }

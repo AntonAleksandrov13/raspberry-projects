@@ -71,7 +71,7 @@
 
       127.0.1.1	caspar
       127.0.1.1	cluster
-
+      127.0.1.1	magi
       10.3.50.1	cluster
     dest: /etc/hosts
     owner: root

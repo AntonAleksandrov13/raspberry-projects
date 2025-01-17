@@ -1,0 +1,25 @@
+#from https://github.com/IBM/ansible-kubernetes-ha-cluster/blob/master/roles/kubeadm-join-node/tasks/main.yaml
+- name: Generate join token
+  shell: kubeadm token create --print-join-command
+  register: kubeadm_join_cmd
+  delegate_to: "{{ groups['main-node'][0] }}"
+
+- set_fact:
+    kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
+
+- name: Check if Kubernetes is already initialized
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_config
+
+- debug: var=kubeadm_join
+
+- name: Store join command
+  become: yes
+  action: copy content="{{ kubeadm_join }}" dest="/etc/kubernetes/kubeadm-join.command"
+  when: not kubeadm_config.stat.exists
+
+- name: Run kubeadm join
+  become: yes
+  shell: "{{ kubeadm_join }}"
+  when: not kubeadm_config.stat.exists

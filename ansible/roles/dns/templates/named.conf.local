@@ -1,0 +1,9 @@
+zone "magi" IN {
+        type master;
+        file "/etc/bind/db.magi";
+    };
+
+zone "0.168.192.in-addr.arpa" {
+        type master;
+        file "/etc/bind/db.rev.0.168.192.in-addr.arpa";
+    };

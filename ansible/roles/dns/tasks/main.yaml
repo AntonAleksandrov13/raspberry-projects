@@ -1,0 +1,49 @@
+- name: Install BIND9
+  become: yes
+  ansible.builtin.package:
+    name: bind9
+    state: present
+
+- name: Install bind9utils
+  become: yes
+  ansible.builtin.package:
+    name: bind9utils
+    state: present
+
+- name: Install bind9-doc
+  become: yes
+  ansible.builtin.package:
+    name: bind9-doc
+    state: present
+
+- name: Ensure BIND9 service is enabled and running
+  become: yes
+  ansible.builtin.service:
+    name: bind9
+    enabled: true
+    state: started
+
+- name: Copy main configuration file (named.conf.local)
+  become: yes
+  ansible.builtin.template:
+    src: named.conf.local
+    dest: /etc/bind/named.conf.local
+
+- name: Copy forward lookup zone file (db.magi)
+  become: yes
+  ansible.builtin.template:
+    src: db.magi
+    dest: /etc/bind/db.magi
+
+- name: Copy reverse lookup zone file (db.rev.0.168.192.in-addr.arpa)
+  become: yes
+  ansible.builtin.template:
+    src: db.rev.0.168.192.in-addr.arpa
+    dest: /etc/bind/db.rev.0.168.192.in-addr.arpa
+#
+#
+#- name: Restart BIND9 service
+#  become: yes
+#  ansible.builtin.systemd:
+#    name: bind9
+#    state: restarted

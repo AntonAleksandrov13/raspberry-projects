@@ -1,0 +1,20 @@
+$TTL   1H
+
+; Start of Authority (SOA) for the domain with short timers
+;  Note: The value of "serial" must be incremented with each update
+magi. IN SOA ns1.magi. hubble.magi. (
+11 ; serial
+2H ; refresh
+1H ; retry
+1W ; expire
+1D ; minimum
+)
+
+; NS or name server records for the DNS server itself
+                    IN   NS           ns1.magi.
+
+; Name Server A Records
+ns1                 IN   A            192.168.0.202
+
+; A Record for the hubble-ui
+hubble-ui          IN   A            192.168.0.202

@@ -1,0 +1,14 @@
+$TTL   1H
+
+@ IN SOA ns1.magi. hubble.magi. (
+    11 ; serial
+    2H ; refresh
+    1H ; retry
+    1W ; expire
+    1D ; minimum
+)
+; NS record
+            IN     NS      ns1.magi.
+
+; PTR record for the hubble
+11          IN     PTR     hubble.magi.

@@ -6,9 +6,28 @@
 - name: Initialize Kubernetes cluster with kubeadm
   become: true
   ansible.builtin.shell: |
-    kubeadm init --control-plane-endpoint={{ main_node_static_ip }} --apiserver-advertise-address={{ main_node_static_ip }}
+    kubeadm init --control-plane-endpoint={{ main_node_static_ip }}
   when: not kubeadm_config.stat.exists
   register: kubeadm_init_output   # Register the output of the command
+
+- name: Get the IP address of eth0
+  shell: "ip -4 -br addr show eth0 | awk '{print $3}' | cut -d/ -f1"
+  register: eth0_ip
+  become: yes
+
+- name: Ensure the line with KUBELET_KUBEADM_ARGS is present
+  lineinfile:
+    path: /var/lib/kubelet/kubeadm-flags.env
+    regexp: '^KUBELET_KUBEADM_ARGS='
+    line: 'KUBELET_KUBEADM_ARGS="--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --node-ip={{ eth0_ip.stdout }} --pod-infra-container-image=registry.k8s.io/pause:3.10"'
+    create: yes
+  become: yes
+
+- name: Restart kubelet service
+  service:
+    name: kubelet
+    state: restarted
+  become: yes
 
 - name: Display kubeadm init output
   ansible.builtin.debug:
@@ -90,6 +109,20 @@
     - cilium-linux-{{ cli_arch }}.tar.gz
     - cilium-linux-{{ cli_arch }}.tar.gz.sha256sum
 
+- name: Add the Helm repository for Jetstack
+  shell: |
+    helm repo add jetstack https://charts.jetstack.io
+    helm repo update
+
+- name: Install Cert-Manager
+  shell: |
+    helm upgrade --install cert-manager jetstack/cert-manager \
+    --namespace cert-manager \
+    --create-namespace \
+    --version v1.16.2 \
+    --set crds.enabled=true
+
+
 
 - name: Install Cilium using Helm
   shell: >
@@ -105,6 +138,10 @@
     --set ingressController.loadbalancerMode=dedicated
     --set hubble.relay.enabled=true
     --set hubble.ui.enabled=true
+    --set hubble.tls.auto.method=certmanager
+    --set hubble.tls.auto.certManagerIssuerRef.group=cert-manager.io
+    --set hubble.tls.auto.certManagerIssuerRef.kind=ClusterIssuer
+    --set hubble.tls.auto.certManagerIssuerRef.name=selfsigned-cluster-issuer
     --set cni.binPath=/usr/lib/cni
   args:
     executable: /bin/bash

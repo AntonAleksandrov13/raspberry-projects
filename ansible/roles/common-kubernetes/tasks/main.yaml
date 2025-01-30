@@ -108,22 +108,12 @@
 
 - include_tasks: tasks/update.yaml
 
-- name: Install kubelet
-  become: yes
-  apt:
-    name: kubelet
-
-- name: Install kubeadm
-  become: yes
-  apt:
-    name: kubeadm
-
 - name: Install kubectl
   become: yes
   apt:
     name: kubectl
 
-- name: Hold kubelet, kubeadm, and kubectl packages #prevent accidental upgrades/deletes
+- name: Hold kubectl packages #prevent accidental upgrades/deletes
   become: true
   ansible.builtin.shell: |
-    apt-mark hold kubelet kubeadm kubectl
+    apt-mark hold  kubectl

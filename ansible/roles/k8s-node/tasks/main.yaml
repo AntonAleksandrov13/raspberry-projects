@@ -1,25 +1,15 @@
-#from https://github.com/IBM/ansible-kubernetes-ha-cluster/blob/master/roles/kubeadm-join-node/tasks/main.yaml
-- name: Generate join token
-  shell: kubeadm token create --print-join-command
-  register: kubeadm_join_cmd
+- name: Retrieve K3s Token from the main node
+  ansible.builtin.slurp:
+    src: /var/lib/rancher/k3s/server/node-token
   delegate_to: "{{ groups['main-node'][0] }}"
+  register: token_file
+  become: true
 
-- set_fact:
-    kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
+- name: Decode the token and remove trailing newline
+  ansible.builtin.set_fact:
+    token_decoded: "{{ token_file.content | b64decode | replace('\n', '') }}"
 
-- name: Check if Kubernetes is already initialized
-  ansible.builtin.stat:
-    path: /etc/kubernetes/admin.conf
-  register: kubeadm_config
-
-- debug: var=kubeadm_join
-
-- name: Store join command
+- name: Install K3s and join cluster
+  ansible.builtin.shell:
+    cmd: curl -sfL https://get.k3s.io | K3S_URL=https://{{ main_node_static_ip }}:6443 K3S_TOKEN={{ token_decoded }} sh -
   become: yes
-  action: copy content="{{ kubeadm_join }}" dest="/etc/kubernetes/kubeadm-join.command"
-  when: not kubeadm_config.stat.exists
-
-- name: Run kubeadm join
-  become: yes
-  shell: "{{ kubeadm_join }}"
-  when: not kubeadm_config.stat.exists

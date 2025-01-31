@@ -3,3 +3,12 @@ configs:
     accounts.readonly: apiKey
   rbac:
     policy.csv: "g, readonly, role:readonly"
+  params:
+    server.insecure: true
+server:
+  ingress:
+    enabled: true
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    hostname: argo-cd.magi
+    ingressClassName: traefik

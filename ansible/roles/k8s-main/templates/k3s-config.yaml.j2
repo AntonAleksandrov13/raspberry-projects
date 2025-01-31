@@ -1,0 +1,7 @@
+write-kubeconfig-mode: "0644"
+write-kubeconfig: "/home/anton/.kube/config"
+node-ip: "{{ internal_ip[0] }}"
+node-external-ip: "{{ external_ip[0] }}"
+tls-san:
+  - "{{ internal_ip[0] }}"
+  - "{{ external_ip[0] }}"

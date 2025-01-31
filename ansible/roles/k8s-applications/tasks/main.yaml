@@ -7,17 +7,14 @@
 - name: Install Helm
   ansible.builtin.shell:
     cmd: /tmp/get-helm-3
-  become: yes
 
 - name: Add ArgoCD Helm repository
   ansible.builtin.shell:
     cmd: helm repo add argo https://argoproj.github.io/argo-helm
-  become: yes
 
 - name: Update Helm repositories
   ansible.builtin.shell:
     cmd: helm repo update
-  become: yes
 
 - name: Create a values file for ArgoCD
   ansible.builtin.template:
@@ -27,5 +24,4 @@
 
 - name: Install ArgoCD Helm chart using the values file
   ansible.builtin.shell:
-    cmd: helm upgrade --install argocd argo/argo-cd --namespace argocd --create-namespace -f /tmp/argocd-values.yaml
-  become: yes
+    cmd: helm upgrade --install argocd argo/argo-cd --namespace argocd --create-namespace -f /tmp/argocd-values.yaml --version 7.7.22

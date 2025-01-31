@@ -19,3 +19,5 @@ ns1                 IN   A            192.168.0.202
 ; A Record for the homepage
 homepage          IN   A            192.168.0.176
 homepage          IN   A            192.168.0.196
+argo-cd           IN   A            192.168.0.176
+argo-cd           IN   A            192.168.0.196

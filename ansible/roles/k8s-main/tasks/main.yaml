@@ -1,3 +1,32 @@
+- name: Get external IP from wlan0 interface
+  ansible.builtin.command: ip addr show wlan0
+  register: wlan_info
+
+- name: Extract the external IP address from wlan0
+  ansible.builtin.set_fact:
+    external_ip: "{{ wlan_info.stdout | regex_search('inet (\\d+\\.\\d+\\.\\d+\\.\\d+)', '\\1') | default('') }}"
+
+- name: Get internal IP from eth0 interface
+  ansible.builtin.command: ip addr show eth0
+  register: eth_info
+
+- name: Extract the internal IP address from eth0
+  ansible.builtin.set_fact:
+    internal_ip: "{{ eth_info.stdout | regex_search('inet (\\d+\\.\\d+\\.\\d+\\.\\d+)', '\\1') | default('') }}"
+
+- name: Ensure /etc/rancher/k3s dir exists
+  file:
+    path: "/etc/rancher/k3s"
+    state: directory
+  become: yes
+
+- name: Create K3s configuration file from template
+  ansible.builtin.template:
+    src: k3s-config.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml
+    mode: '0644'
+  become: yes
+
 - name: Install K3s
   ansible.builtin.shell:
     cmd: curl -sfL https://get.k3s.io | sh -

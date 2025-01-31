@@ -40,10 +40,10 @@
   ansible.builtin.template:
     src: db.rev.0.168.192.in-addr.arpa
     dest: /etc/bind/db.rev.0.168.192.in-addr.arpa
-#
-#
-#- name: Restart BIND9 service
-#  become: yes
-#  ansible.builtin.systemd:
-#    name: bind9
-#    state: restarted
+
+
+- name: Restart BIND9 service
+  become: yes
+  ansible.builtin.systemd:
+    name: bind9
+    state: restarted

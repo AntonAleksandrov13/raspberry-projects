@@ -11,4 +11,4 @@ $TTL   1H
             IN     NS      ns1.magi.
 
 ; PTR record for the hubble
-11          IN     PTR     hubble.magi.
+11          IN     PTR     homepage.magi.

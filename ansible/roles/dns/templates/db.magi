@@ -16,5 +16,5 @@ magi. IN SOA ns1.magi. hubble.magi. (
 ; Name Server A Records
 ns1                 IN   A            192.168.0.202
 
-; A Record for the hubble-ui
-hubble-ui          IN   A            192.168.0.202
+; A Record for the homepage
+homepage          IN   A            192.168.0.202

@@ -1,4 +1,4 @@
 - hosts: secondary-nodes
   roles:
-    - { role: 'common-kubernetes', tags: 'kubernetes' }
+    - { role: 'k8s-common', tags: 'kubernetes' }
     - { role: 'k8s-node', tags: 'kubernetes, secondary-nodes' }

@@ -3,5 +3,6 @@
     - {role: 'dhcp', tags: 'dhcp'}
     - {role: 'nat', tags: 'nat'}
     - { role: 'dns', tags: 'dns' }
-    - { role: 'common-kubernetes', tags: 'kubernetes' }
+    - { role: 'k8s-common', tags: 'kubernetes' }
     - { role: 'k8s-main', tags: 'kubernetes, main-node' }
+    - { role: 'k8s-applications', tags: 'kubernetes, applications' }

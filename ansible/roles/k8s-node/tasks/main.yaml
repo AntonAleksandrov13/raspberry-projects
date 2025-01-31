@@ -9,7 +9,23 @@
   ansible.builtin.set_fact:
     token_decoded: "{{ token_file.content | b64decode | replace('\n', '') }}"
 
-- name: Install K3s and join cluster
+- name: Get external IP from wlan0 interface
+  ansible.builtin.command: ip addr show wlan0
+  register: wlan_info
+
+- name: Extract the external IP address from wlan0
+  ansible.builtin.set_fact:
+    external_ip: "{{ wlan_info.stdout | regex_search('inet (\\d+\\.\\d+\\.\\d+\\.\\d+)', '\\1') | default('') }}"
+
+- name: Get internal IP from eth0 interface
+  ansible.builtin.command: ip addr show eth0
+  register: eth_info
+
+- name: Extract the internal IP address from eth0
+  ansible.builtin.set_fact:
+    internal_ip: "{{ eth_info.stdout | regex_search('inet (\\d+\\.\\d+\\.\\d+\\.\\d+)', '\\1') | default('') }}"
+
+- name: Install K3s and join cluster with node IPs
   ansible.builtin.shell:
-    cmd: curl -sfL https://get.k3s.io | K3S_URL=https://{{ main_node_static_ip }}:6443 K3S_TOKEN={{ token_decoded }} sh -
+    cmd: curl -sfL https://get.k3s.io | K3S_URL=https://{{ main_node_static_ip }}:6443 K3S_TOKEN={{ token_decoded }} sh -s - agent --node-ip={{ internal_ip[0] }} --node-external-ip={{ external_ip[0] }}
   become: yes

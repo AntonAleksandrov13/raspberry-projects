@@ -31,3 +31,7 @@
   ansible.builtin.shell:
     cmd: curl -sfL https://get.k3s.io | sh -
   become: yes
+
+- name: Taint the main node
+  ansible.builtin.shell:
+    cmd: kubectl taint node {{ ansible_hostname }} node-role.kubernetes.io/control-plane=true:NoSchedule --overwrite

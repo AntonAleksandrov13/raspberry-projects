@@ -1,14 +1,18 @@
+global:
+  domain: argo-cd.magi
 configs:
   cm:
     accounts.readonly: apiKey
   rbac:
     policy.csv: "g, readonly, role:readonly"
   params:
-    server.insecure: true
+    server.insecure: false
 server:
   ingress:
     enabled: true
     annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: web
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
     hostname: argo-cd.magi
     ingressClassName: traefik
+    tls: true
